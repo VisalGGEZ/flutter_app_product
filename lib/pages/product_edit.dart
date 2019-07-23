@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_course/helpers/ensure_visible.dart';
 import 'package:flutter_course/models/product.dart';
+import 'package:flutter_course/scoped-models/main-model.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:flutter_course/scoped-models/products.dart';
 
 class ProductEditPage extends StatefulWidget {
-
   @override
   State<StatefulWidget> createState() {
     return _ProductEditPageState();
@@ -14,9 +13,14 @@ class ProductEditPage extends StatefulWidget {
 
 class _ProductEditPageState extends State<ProductEditPage> {
   final Product _formData = Product(
-      title: null, price: null, description: null, image: 'assets/food.jpg', isFavorite: false);
+      title: null,
+      price: null,
+      description: null,
+      image: 'assets/food.jpg',
+      isFavorite: false,
+      userEmail: null,
+      userId: null);
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  bool _isUpdate = false;
   final _titleFocusNode = FocusNode();
   final _descriptionFocusNode = FocusNode();
   final _priceFocusNode = FocusNode();
@@ -84,28 +88,28 @@ class _ProductEditPageState extends State<ProductEditPage> {
     );
   }
 
-  void _submitForm(Function addProduct, Function updateProduct) {
+  void _submitForm(Function addProduct, Function updateProduct, bool isUpdate) {
     if (!_formKey.currentState.validate()) {
       return;
     }
     _formKey.currentState.save();
-    if (_isUpdate) {
-      print('update item');
+    if (isUpdate) {
       updateProduct(_formData);
     } else {
       print('create item');
       addProduct(_formData);
     }
-    Navigator.pushReplacementNamed(context, '/products');
+    // Navigator.pushReplacementNamed(context, '/products');
   }
 
   Widget _buildSubmitButton() {
-    return ScopedModelDescendant<ProductsModel>(
-      builder: (BuildContext context, Widget child, ProductsModel model) {
+    return ScopedModelDescendant(
+      builder: (BuildContext context, Widget child, MainModel model) {
         return RaisedButton(
           child: Text('Save'),
           textColor: Colors.white,
-          onPressed: () => _submitForm(model.addProduct, model.udpateProduct),
+          onPressed: () => _submitForm(model.addProduct, model.udpateProduct,
+              model.isUpdate),
         );
       },
     );
@@ -137,22 +141,26 @@ class _ProductEditPageState extends State<ProductEditPage> {
     final double targetWidth = deviceWidth > 550.0 ? 500.0 : deviceWidth * 0.95;
     final double targetPadding = deviceWidth - targetWidth;
 
-    return ScopedModelDescendant<ProductsModel>(builder: (BuildContext context, Widget child, ProductsModel model){
-      if (model.selectedProduct == null) {
-      return pageContent(targetPadding);
-    } else {
+    return ScopedModelDescendant(
+      builder: (BuildContext context, Widget child, MainModel model) {
+        if (!model.isUpdate) {
+          return pageContent(targetPadding);
+        } else {
+          _formData.title = model.selectedProduct.title;
+          _formData.description = model.selectedProduct.description;
+          _formData.price = model.selectedProduct.price;
+          _formData.userId = model.selectedProduct.userId;
+          _formData.userEmail = model.selectedProduct.userEmail;
+          _formData.isFavorite = model.selectedProduct.isFavorite;
 
-      _formData.title = model.selectedProduct.title;
-      _formData.description = model.selectedProduct.description;
-      _formData.price = model.selectedProduct.price;
-
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('Edit Product'),
-        ),
-        body: pageContent(targetPadding),
-      );
-    }
-    },);
+          return Scaffold(
+            appBar: AppBar(
+              title: Text('Edit Product'),
+            ),
+            body: pageContent(targetPadding),
+          );
+        }
+      },
+    );
   }
 }

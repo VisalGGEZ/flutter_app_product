@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:scoped_model/scoped_model.dart';
+import '../scoped-models/main-model.dart';
 
 class AuthPage extends StatefulWidget {
   @override
@@ -11,6 +13,7 @@ class _AuthPageState extends State<AuthPage> {
   String _emailValue;
   String _passwordValue;
   bool _acceptTerms = false;
+  final GlobalKey<FormState> _formState = GlobalKey<FormState>();
 
   DecorationImage _buildBackgroundImage() {
     return DecorationImage(
@@ -22,27 +25,25 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Widget _buildEmailTextField() {
-    return TextField(
+    return TextFormField(
       decoration: InputDecoration(
-          labelText: 'E-Mail', filled: true, fillColor: Colors.white),
+          labelText: 'E-Mail', filled: true, fillColor: Colors.black26),
       keyboardType: TextInputType.emailAddress,
-      onChanged: (String value) {
-        setState(() {
-          _emailValue = value;
-        });
+      initialValue: 'visal012896@gmail.com',
+      onSaved: (String value) {
+        _emailValue = value;
       },
     );
   }
 
   Widget _buildPasswordTextField() {
-    return TextField(
+    return TextFormField(
       decoration: InputDecoration(
-          labelText: 'Password', filled: true, fillColor: Colors.white),
+          labelText: 'Password', filled: true, fillColor: Colors.black26),
       obscureText: true,
-      onChanged: (String value) {
-        setState(() {
-          _passwordValue = value;
-        });
+      initialValue: 'visal14k',
+      onSaved: (String value) {
+        _passwordValue = value;
       },
     );
   }
@@ -59,9 +60,11 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 
-  void _submitForm() {
+  void _submitForm(Function login) {
+    _formState.currentState.save();
     print(_emailValue);
     print(_passwordValue);
+    login(_emailValue, _passwordValue);
     Navigator.pushReplacementNamed(context, '/products');
   }
 
@@ -82,23 +85,31 @@ class _AuthPageState extends State<AuthPage> {
           child: SingleChildScrollView(
             child: Container(
               width: targetWidth,
-              child: Column(
-                children: <Widget>[
-                  _buildEmailTextField(),
-                  SizedBox(
-                    height: 10.0,
-                  ),
-                  _buildPasswordTextField(),
-                  _buildAcceptSwitch(),
-                  SizedBox(
-                    height: 10.0,
-                  ),
-                  RaisedButton(
-                    textColor: Colors.white,
-                    child: Text('LOGIN'),
-                    onPressed: _submitForm,
-                  ),
-                ],
+              child: Form(
+                key: _formState,
+                child: Column(
+                  children: <Widget>[
+                    _buildEmailTextField(),
+                    SizedBox(
+                      height: 10.0,
+                    ),
+                    _buildPasswordTextField(),
+                    _buildAcceptSwitch(),
+                    SizedBox(
+                      height: 10.0,
+                    ),
+                    ScopedModelDescendant(
+                      builder: (BuildContext context, Widget child,
+                          MainModel model) {
+                        return RaisedButton(
+                          textColor: Colors.white,
+                          child: Text('LOGIN'),
+                          onPressed: () => _submitForm(model.login),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
