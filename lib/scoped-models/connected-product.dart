@@ -1,35 +1,14 @@
+import 'dart:convert' as convert;
+
 import 'package:scoped_model/scoped_model.dart';
 import '../models/product.dart';
 import '../models/user.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 mixin ConnectedProductModel on Model {
   User authenticateUser;
   List<Product> products = [];
   int _selectedIndex;
-
-  void addProduct(Product product) {
-    product.userId = authenticateUser.id;
-    product.userEmail = authenticateUser.email;
-    product.image =
-        'https://www.google.com/url?sa=i&source=images&cd=&ved=2ahUKEwi2jvrkucrjAhVRjuYKHeuyB08QjRx6BAgBEAU&url=http%3A%2F%2Fwww.peanutbutterandpeppers.com%2F2012%2F05%2F16%2Fpeppermint-mocha-frappe%2F&psig=AOvVaw2ZfOdZHngLOmCN87upkx8l&ust=1563951038227575';
-
-    final Map<String, dynamic> productData = {
-      'title': product.title,
-      'image': product.image,
-      'description': product.description,
-      'price': product.price,
-      'id': product.userId,
-      'email': product.userEmail
-    };
-
-    http.post('https://ezwallpaper-b95a5.firebaseio.com/products.json',
-        body: json.encode(productData));
-
-    products.add(product);
-    _selectedIndex = null;
-  }
 
   Product _selectedProduct;
   bool _isFavorite = false;
@@ -50,6 +29,56 @@ mixin ConnectedProductModel on Model {
 
   int get selectedIndex {
     return _selectedIndex;
+  }
+
+  void fetchProruduct() {
+    http
+        .get('https://ezwallpaper-b95a5.firebaseio.com/products.json')
+        .then((http.Response response) {
+      final List<Product> tempProductList = [];
+      final Map<String, dynamic> productsData =
+          convert.jsonDecode(response.body);
+      productsData.forEach((String productId, dynamic productsData) {
+        final Product tempProduct = Product(
+            id: productId,
+            title: productsData['title'],
+            price: productsData['price'],
+            image: productsData['image'],
+            description: productsData['description'],
+            isFavorite: productsData['isFavorite'],
+            userEmail: productsData['userEmail'],
+            userId: productsData['userId']);
+        tempProductList.add(tempProduct);
+      });
+      products = tempProductList;
+      print(products);
+      notifyListeners();
+    });
+  }
+
+  void addProduct(String title, String description, double price) {
+    final Map<String, dynamic> productData = {
+      'title': title,
+      'image':
+          'https://amp.insider.com/images/5a395a06fcdf1e2d008b461b-750-563.jpg',
+      'description': description,
+      'price': price,
+      'userId': authenticateUser.id,
+      'userEmail': authenticateUser.email
+    };
+
+    http
+        .post('https://ezwallpaper-b95a5.firebaseio.com/products.json',
+            body: convert.json.encode(productData))
+        .then((http.Response response) {
+      Map<String, dynamic> productRes = convert.json.decode(response.body);
+      print(productRes);
+
+      // products.add(Product(
+      
+      // ));
+      // _selectedIndex = null;
+    });
   }
 
   void setUpdateMode(bool value) {
@@ -84,6 +113,7 @@ mixin ConnectedProductModel on Model {
     final bool isCurrentlyFavorite = selectedProduct.isFavorite;
     final bool newIsCurrentlyFavorite = !isCurrentlyFavorite;
     final Product productToBeUpdated = Product(
+        id: selectedProduct.id,
         title: selectedProduct.title,
         description: selectedProduct.description,
         price: selectedProduct.price,

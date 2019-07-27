@@ -1,14 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_course/models/product.dart';
 import 'package:flutter_course/scoped-models/main-model.dart';
 
 import '../widgets/products/products.dart';
 import 'package:scoped_model/scoped_model.dart';
 
-class ProductsPage extends StatelessWidget {
-  final List<Product> products;
+class ProductsPage extends StatefulWidget {
+  final MainModel model;
 
-  ProductsPage(this.products);
+  ProductsPage({@required this.model});
+
+  @override
+  State<StatefulWidget> createState() {
+    return _ProductsPageState();
+  }
+}
+
+class _ProductsPageState extends State<ProductsPage> {
+  @override
+  void initState() {
+    widget.model.fetchProruduct();
+    super.initState();
+  }
 
   Widget _buildSideDrawer(BuildContext context) {
     return Drawer(
@@ -40,7 +52,9 @@ class ProductsPage extends StatelessWidget {
           ScopedModelDescendant(
             builder: (BuildContext context, Widget child, MainModel model) {
               return IconButton(
-                icon: Icon(model.isFavorite == false ? Icons.favorite_border : Icons.favorite),
+                icon: Icon(model.isFavorite == false
+                    ? Icons.favorite_border
+                    : Icons.favorite),
                 onPressed: () {
                   model.toggleDisplayProducts();
                 },

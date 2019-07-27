@@ -13,6 +13,7 @@ class ProductEditPage extends StatefulWidget {
 
 class _ProductEditPageState extends State<ProductEditPage> {
   final Product _formData = Product(
+      id: null,
       title: null,
       price: null,
       description: null,
@@ -97,9 +98,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
       updateProduct(_formData);
     } else {
       print('create item');
-      addProduct(_formData);
+      addProduct(_formData.title, _formData.description, _formData.price);
     }
-    // Navigator.pushReplacementNamed(context, '/products');
+    Navigator.pushReplacementNamed(context, '/products');
   }
 
   Widget _buildSubmitButton() {
@@ -108,8 +109,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
         return RaisedButton(
           child: Text('Save'),
           textColor: Colors.white,
-          onPressed: () => _submitForm(model.addProduct, model.udpateProduct,
-              model.isUpdate),
+          onPressed: () => _submitForm(
+              model.addProduct, model.udpateProduct, model.isUpdate),
         );
       },
     );
