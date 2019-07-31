@@ -17,7 +17,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       title: null,
       price: null,
       description: null,
-      image: 'assets/food.jpg',
+      image: null,
       isFavorite: false,
       userEmail: null,
       userId: null);
@@ -28,22 +28,21 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   Widget _buildTitleTextField() {
     return EnsureVisibleWhenFocused(
-      focusNode: _titleFocusNode,
-      child: TextFormField(
         focusNode: _titleFocusNode,
-        decoration: InputDecoration(labelText: 'Product Title'),
-        initialValue: _formData.title,
-        validator: (value) {
-          if (value.isEmpty || value.length < 5) {
-            return 'Field is required and it must be more than 5+ characters';
-          }
-          return null;
-        },
-        onSaved: (String value) {
-          _formData.title = value;
-        },
-      ),
-    );
+        child: TextFormField(
+          focusNode: _titleFocusNode,
+          decoration: InputDecoration(labelText: 'Product Title'),
+          initialValue: _formData.title,
+          validator: (value) {
+            if (value.isEmpty || value.length < 5) {
+              return 'Field is required and it must be more than 5+ characters';
+            }
+            return null;
+          },
+          onSaved: (String value) {
+            _formData.title = value;
+          },
+        ));
   }
 
   Widget _buildDescriptionTextField() {
@@ -107,7 +106,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
     return ScopedModelDescendant(
       builder: (BuildContext context, Widget child, MainModel model) {
         return RaisedButton(
-          child: Text('Save'),
+          child: Text(model.isUpdate == false ? 'Save' : 'Update'),
           textColor: Colors.white,
           onPressed: () => _submitForm(
               model.addProduct, model.udpateProduct, model.isUpdate),
@@ -147,8 +146,10 @@ class _ProductEditPageState extends State<ProductEditPage> {
         if (!model.isUpdate) {
           return pageContent(targetPadding);
         } else {
+          _formData.id = model.selectedProduct.id;
           _formData.title = model.selectedProduct.title;
           _formData.description = model.selectedProduct.description;
+          _formData.image = model.selectedProduct.image;
           _formData.price = model.selectedProduct.price;
           _formData.userId = model.selectedProduct.userId;
           _formData.userEmail = model.selectedProduct.userEmail;

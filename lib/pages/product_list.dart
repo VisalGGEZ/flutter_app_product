@@ -24,7 +24,7 @@ class ProductListPage extends StatelessWidget {
               },
               child: ListTile(
                 leading: CircleAvatar(
-                  child: Image.asset(model.allProducts[index].image),
+                  child: Image.network(model.allProducts[index].image),
                 ),
                 title: Text(model.allProducts[index].title),
                 subtitle: Text('\$ ${model.allProducts[index].price}'),

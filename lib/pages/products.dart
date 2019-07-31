@@ -3,6 +3,7 @@ import 'package:flutter_course/scoped-models/main-model.dart';
 
 import '../widgets/products/products.dart';
 import 'package:scoped_model/scoped_model.dart';
+import '../widgets/ui_elements/my-loading.dart';
 
 class ProductsPage extends StatefulWidget {
   final MainModel model;
@@ -18,7 +19,10 @@ class ProductsPage extends StatefulWidget {
 class _ProductsPageState extends State<ProductsPage> {
   @override
   void initState() {
-    widget.model.fetchProruduct();
+    if (widget.model.displayListProducts().length == 0) {
+      widget.model.fetchProruduct();
+    }
+    widget.model.setUpdateMode(false);
     super.initState();
   }
 
@@ -39,6 +43,29 @@ class _ProductsPageState extends State<ProductsPage> {
           )
         ],
       ),
+    );
+  }
+
+  Widget _buildProductList() {
+    return ScopedModelDescendant(
+      builder: (BuildContext context, Widget widget, MainModel model) {
+        Widget content;
+        if (model.isLoading) {
+          content = Container(
+            color: Theme.of(context).accentColor,
+            child: MyLoading(loadingSize: 50.0),
+          );
+        } else {
+          if (model.displayListProducts().length == 0) {
+            content = Center(
+              child: Text('No Data'),
+            );
+          } else {
+            content = Products();
+          }
+        }
+        return content;
+      },
     );
   }
 
@@ -63,7 +90,7 @@ class _ProductsPageState extends State<ProductsPage> {
           )
         ],
       ),
-      body: Products(),
+      body: _buildProductList(),
     );
   }
 }

@@ -5,7 +5,7 @@ class Product {
   String title;
   String image;
   String description;
-  double price;
+  double price; 
   bool isFavorite;
   String userId;
   String userEmail;

@@ -9,18 +9,18 @@ mixin ConnectedProductModel on Model {
   User authenticateUser;
   List<Product> products = [];
   int _selectedIndex;
+  bool _isLoading = false;
 
   Product _selectedProduct;
   bool _isFavorite = false;
   bool _isUpdate = false;
 
   bool get isUpdate {
-    bool value = false;
-    if (_isUpdate) {
-      value = true;
-      _isUpdate = false;
-    }
-    return value;
+    return _isUpdate;
+  }
+
+  bool get isLoading {
+    return _isLoading;
   }
 
   bool get isFavorite {
@@ -31,7 +31,12 @@ mixin ConnectedProductModel on Model {
     return _selectedIndex;
   }
 
+  void setUpdateModel(bool value){
+    _isUpdate = value;
+  }
+
   void fetchProruduct() {
+    _isLoading = true;
     http
         .get('https://ezwallpaper-b95a5.firebaseio.com/products.json')
         .then((http.Response response) {
@@ -51,7 +56,7 @@ mixin ConnectedProductModel on Model {
         tempProductList.add(tempProduct);
       });
       products = tempProductList;
-      print(products);
+      _isLoading = false;
       notifyListeners();
     });
   }
@@ -73,9 +78,11 @@ mixin ConnectedProductModel on Model {
         .then((http.Response response) {
       Map<String, dynamic> productRes = convert.json.decode(response.body);
       print(productRes);
-
+      productRes.forEach((String productId, dynamic productsData){
+        print(productsData['title']);
+      });
       // products.add(Product(
-      
+
       // ));
       // _selectedIndex = null;
     });
@@ -102,7 +109,24 @@ mixin ConnectedProductModel on Model {
   }
 
   void udpateProduct(Product product) {
-    products[selectedIndex] = product;
+    final Map<String, dynamic> requestBody = {
+      'title': product.title,
+      'description': product.description,
+      'product': product.price,
+      'image': product.image,
+      'userId': product.userId,
+      'userEmail': product.userEmail
+    };
+    http
+        .put(
+            'https://ezwallpaper-b95a5.firebaseio.com/products/{$product.id}.json',
+            body: requestBody)
+        .then((http.Response response) {
+      if (response.statusCode == 200) {
+        products[selectedIndex] = product;
+      }
+      _isUpdate = false;
+    });
   }
 
   void deleteProduct(int index) {
